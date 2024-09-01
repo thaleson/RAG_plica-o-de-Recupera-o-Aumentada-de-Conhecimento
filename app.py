@@ -123,5 +123,4 @@ if uploaded_file is not None:
         response_answer = {"answer": result["answer"], "sources": sources}
         st.write(response_answer)
 
-        st.write("-============================Resultado da consulta:============================")
-        st.write(resultado_consulta)
+        
