@@ -12,9 +12,9 @@ from langchain.prompts import PromptTemplate
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
 
-from pdf_utils import extrair_texto_pdf, extract_text_to_documents
-from ollama_utils import Ollama3Wrapper
-from chromadb_utils import ChromaDBWrapper
+from app.pdf_utils import extrair_texto_pdf, extract_text_to_documents
+from app.ollama_utils import Ollama3Wrapper
+from app.chromadb_utils import ChromaDBWrapper
 
 # Inicializar o modelo e o armazenamento de vetores
 cached_llm = Ollama(model="llama3")
