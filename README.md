@@ -15,7 +15,6 @@ Certifique-se de ter os seguintes pacotes instalados:
 - **Python 3.10 ou superior** 🐍
 - **Ollama 3** 📦
 - **ChromaDB** 📊
-- **Sentence Transformers** 📖
 - **PyMuPDF** 📚
 
 ## 📥 Instalação
