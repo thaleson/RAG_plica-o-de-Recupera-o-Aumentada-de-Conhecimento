@@ -2,31 +2,39 @@ from chromadb import Client
 
 class ChromaDBWrapper:
     """
-    Um wrapper para a interação com o ChromaDB, facilitando a criação, armazenamento e consulta em uma coleção de vetores.
+    Um wrapper para a interação com o ChromaDB, facilitando o gerenciamento de coleções e armazenamento de vetores.
 
-    Attributes:
-        client (Client): Instância do cliente ChromaDB para interagir com o banco de dados.
-        db_url (str): URL do banco de dados ChromaDB.
-        collection_name (str): Nome da coleção de vetores a ser usada.
-        collection (Collection): Instância da coleção de vetores no ChromaDB.
+    Atributos:
+    ----------
+    client : Client
+        Instância do cliente ChromaDB para interação com o banco de dados.
+    db_url : str
+        URL do banco de dados ChromaDB.
+    collection_name : str
+        Nome da coleção usada para armazenar e consultar vetores.
+    collection : Collection
+        Instância da coleção usada para armazenar e consultar vetores.
 
-    Methods:
-        __init__(db_url):
-            Inicializa a instância do ChromaDBWrapper, criando ou recuperando a coleção de vetores.
-
-        armazena(vetores):
-            Armazena uma lista de vetores na coleção ChromaDB.
-
-        consulta(consulta):
-            Consulta a coleção ChromaDB e retorna os resultados baseados em uma consulta fornecida.
+    Métodos:
+    --------
+    __init__(db_url: str)
+        Inicializa o ChromaDBWrapper com a URL do banco de dados e configura a coleção.
+    
+    armazena(vetores: list)
+        Armazena uma lista de vetores na coleção do ChromaDB.
+    
+    consulta(consulta: str) -> dict
+        Consulta a coleção do ChromaDB com um texto de consulta e retorna os resultados.
     """
 
-    def __init__(self, db_url):
+    def __init__(self, db_url: str):
         """
-        Inicializa a instância do ChromaDBWrapper, criando ou recuperando a coleção de vetores.
+        Inicializa o ChromaDBWrapper com a URL do banco de dados e configura a coleção.
 
-        Args:
-            db_url (str): URL do banco de dados ChromaDB para a conexão.
+        Parâmetros:
+        -----------
+        db_url : str
+            URL do banco de dados ChromaDB.
         """
         self.client = Client()  # Inicialize o cliente conforme a documentação
         self.db_url = db_url
@@ -56,13 +64,17 @@ class ChromaDBWrapper:
 
     def armazena(self, vetores):
         """
-        Armazena uma lista de vetores na coleção ChromaDB.
+        Armazena uma lista de vetores na coleção do ChromaDB.
 
-        Args:
-            vetores (list or str): Lista de vetores a serem armazenados. Se for uma string, deve ser convertida para uma lista de vetores.
-
-        Raises:
-            ValueError: Se a conversão de string para lista falhar ou se os vetores não estiverem no formato esperado.
+        Parâmetros:
+        -----------
+        vetores : list
+            Lista de vetores a serem armazenados. Cada vetor deve ser uma lista.
+        
+        Lança:
+        ------
+        ValueError
+            Se `vetores` não for uma lista ou se algum vetor dentro da lista não for uma lista.
         """
         if isinstance(vetores, str):
             # Se vetores for uma string, tente converter a string para uma lista de vetores
@@ -80,20 +92,21 @@ class ChromaDBWrapper:
                 raise ValueError("Esperava um vetor como lista, mas recebeu: {}".format(type(vetor)))
             self.collection.add(vetor)  # Adiciona vetores à coleção
 
-    def consulta(self, consulta):
+    def consulta(self, consulta: str) -> dict:
         """
-        Consulta a coleção ChromaDB e retorna os resultados baseados em uma consulta fornecida.
+        Consulta a coleção do ChromaDB com um texto de consulta e retorna os resultados.
 
-        Args:
-            consulta (str): O texto da consulta para buscar na coleção.
-
-        Returns:
-            dict: Resultados da consulta na coleção, baseados na implementação da API ChromaDB.
-
-        Notes:
-            A consulta é realizada com o texto fornecido e o formato dos resultados depende da implementação do método `query`.
+        Parâmetros:
+        -----------
+        consulta : str
+            Texto de consulta para buscar na coleção do ChromaDB.
+        
+        Retorna:
+        --------
+        dict
+            Resultados da consulta, formatados conforme a API real do ChromaDB.
         """
-      
+        # Implementar a lógica para consultar o ChromaDB
         print(self.collection.count())
         resultados = self.collection.query(query_texts=[consulta])  # Ajuste conforme a API real
         return resultados

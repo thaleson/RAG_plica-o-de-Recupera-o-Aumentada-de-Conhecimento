@@ -1,20 +1,21 @@
 import streamlit as st
-from dotenv import load_dotenv
 import os
+import shutil
+from tempfile import NamedTemporaryFile
+from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_community.llms import Ollama
-from langchain.prompts import PromptTemplate
+from langchain.prompts import ChatPromptTemplate
+from src.pdf_utils import extrair_texto_pdf, extract_text_to_documents
+from src.ollama_utils import Ollama3Wrapper
+from src.chromadb_utils import ChromaDBWrapper
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
-
-from app.pdf_utils import extrair_texto_pdf, extract_text_to_documents
-from app.ollama_utils import Ollama3Wrapper
-from app.chromadb_utils import ChromaDBWrapper
 
 # Inicializar o modelo e o armazenamento de vetores
 cached_llm = Ollama(model="llama3")
@@ -26,15 +27,11 @@ text_splitter = RecursiveCharacterTextSplitter(
 embedding = FastEmbedEmbeddings()
 folder_path = "db"
 
-raw_prompt = PromptTemplate.from_template(
-    """ 
-    <s>[INST] Você é um assistente técnico bom em pesquisar documentos. Se você não tiver uma resposta com base nas informações fornecidas, diga-o [/INST] </s>
-    [INST] {input}
-           Context: {context}
-           Answer:
-    [/INST]
-"""
-)
+# Definindo o novo template de prompt com contexto concatenado
+new_prompt = ChatPromptTemplate.from_messages([
+    ("system", "Você é uma IA que responde a todas as perguntas sobre um documento PDF enviado por usuários. Você só responde em português."),
+    ("user", "{input}\n\nContexto:\n{context}")
+])
 
 # Configurações
 model_name = os.getenv('LANGCHAIN_MODEL', 'ollama3')
@@ -51,9 +48,14 @@ st.title("Aplicação de Recuperação Aumentada de Conhecimento (RAG)")
 uploaded_file = st.file_uploader("Escolha um arquivo PDF", type="pdf")
 
 if uploaded_file is not None:
+    # Salvar o arquivo PDF carregado em um diretório temporário
+    with NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+        temp_file.write(uploaded_file.read())
+        temp_file_path = temp_file.name
+
     # Extrair texto do PDF
-    texto = extrair_texto_pdf(uploaded_file)
-    documents = extract_text_to_documents(uploaded_file)
+    texto = extrair_texto_pdf(temp_file_path)
+    documents = extract_text_to_documents(temp_file_path)
     
     st.write("Texto extraído do PDF:")
     st.write(texto)
@@ -62,33 +64,16 @@ if uploaded_file is not None:
     if st.button("Processar Texto"):
         """
         Processa o texto extraído do PDF e armazena os vetores gerados no banco de dados.
-        
-        O texto é dividido em chunks, convertido em vetores e armazenado usando o ChromaDB.
+
+        O texto extraído é dividido em chunks usando `RecursiveCharacterTextSplitter`, e cada chunk é convertido em vetores usando `FastEmbedEmbeddings`. Os vetores são armazenados no banco de dados usando `Chroma` e persistidos no diretório especificado por `folder_path`.
         """
-        print(f"docs len={len(documents)}")
-
         chunks = text_splitter.split_documents(documents)
-        print(f"chunks len={len(chunks)}")
-
         vector_store = Chroma.from_documents(
             documents=chunks, embedding=embedding, persist_directory=folder_path
         )
-
         vector_store.persist()
-
-        print('texto')
-        print(texto)
-        print("# processando no llama")
-        resultado = ollama.processar(texto)
-        vetores = resultado.get('vetores', [])
         
-        if isinstance(vetores, str):
-     
-            st.error("Os vetores retornados são uma string. Esperado uma lista de vetores.")
-        else:
-            
-            db.armazena(vetores)
-            st.write("Texto processado e vetores armazenados com sucesso!")
+        st.write("Texto processado e vetores armazenados com sucesso!")
 
     # Consulta ao banco de dados
     consulta = st.text_input("Digite sua consulta")
@@ -96,31 +81,49 @@ if uploaded_file is not None:
     if st.button("Consultar"):
         """
         Consulta o banco de dados usando a ChromaDB e retorna uma resposta gerada pelo modelo Ollama3.
-        
-        A consulta é realizada para recuperar documentos relevantes e gerar uma resposta baseada no contexto.
+
+        A consulta é feita no banco de dados para recuperar documentos relevantes. Os documentos recuperados são utilizados para gerar uma resposta usando o modelo Ollama3. O resultado inclui a resposta gerada e fontes relevantes, que são exibidas ao usuário.
         """
-        resultado_consulta = db.consulta(consulta)
+        # Recuperar os vetores relevantes para a consulta
+        consulta_resultado = db.consulta(consulta)
+        
+        # Verifique se a consulta retornou documentos relevantes
+        if not consulta_resultado:
+            st.error("Nenhum documento relevante encontrado.")
+        
         vector_store = Chroma(persist_directory=folder_path, embedding_function=embedding)
 
-        print("Creating chain")
         retriever = vector_store.as_retriever(
             search_type="similarity_score_threshold",
             search_kwargs={
                 "k": 20,
-                "score_threshold": 0.1,
+                "score_threshold": 0.8,
             },
         )
-        document_chain = create_stuff_documents_chain(cached_llm, raw_prompt)
+        
+        document_chain = create_stuff_documents_chain(cached_llm, new_prompt)
         chain = create_retrieval_chain(retriever, document_chain)
 
-        result = chain.invoke({"input": consulta})
-        sources = []
-        for doc in result["context"]:
-            sources.append(
-                {"source": doc.metadata["source"], "page_content": doc.page_content}
-            )
+        # Realizar a consulta e obter o resultado
+        try:
+            result = chain.invoke({"input": consulta, "context": consulta_resultado})
+            sources = []
+            for doc in result.get("context", []):
+                sources.append(
+                    {"source": doc.metadata.get("source", "Desconhecido"), "page_content": doc.page_content}
+                )
 
-        response_answer = {"answer": result["answer"], "sources": sources}
-        st.write(response_answer)
+            response_answer = {"answer": result.get("answer", "Nenhuma resposta encontrada."), "sources": sources}
+            st.write(f"""
+            
+            ## Resposta
 
-        
+            {response_answer["answer"]}
+
+            """)
+        except Exception as e:
+            st.error(f"Erro ao processar a consulta: {e}")
+
+    # Remover o arquivo temporário
+    if os.path.exists(temp_file_path):
+        os.remove(temp_file_path)
