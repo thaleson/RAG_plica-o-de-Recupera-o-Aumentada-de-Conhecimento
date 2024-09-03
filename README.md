@@ -92,9 +92,6 @@ Aqui estão os passos para baixar o modelo Llama 3:
 
 Se você tiver algum problema durante o processo, pode verificar a documentação do `ollama` ou o suporte técnico do serviço.
    
-### 3. **Executar a Aplicação**
-
-Após configurar o servidor Ollama e baixar o modelo Llama 3, você pode iniciar a aplicação. Certifique-se de que o servidor Ollama está rodando antes de executar a aplicação.
 
 Para executar a aplicação, use o comando:
 
