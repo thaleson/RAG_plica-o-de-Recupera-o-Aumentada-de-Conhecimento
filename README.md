@@ -1,7 +1,3 @@
-Aqui está o README atualizado com as instruções detalhadas sobre Docker e Ollama, bem como o link para o vídeo de teste:
-
----
-
 # 📚 Aplicação de Recuperação Aumentada de Conhecimento (RAG) com Ollama 3
 
 Bem-vindo ao projeto de Recuperação Aumentada de Conhecimento (RAG) usando o modelo Ollama 3! 🎉 Este projeto oferece uma solução robusta para extrair e consultar informações de arquivos PDF. Vamos começar! 🚀
