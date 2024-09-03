@@ -49,9 +49,8 @@ Execute:
 ```bash
 pip install -r requirements.txt
 ```
-Claro! Vou adicionar uma seção no README para alertar o usuário sobre a necessidade de baixar o servidor Ollama e o modelo Llama 3. Aqui está um exemplo de como você pode estruturar essa seção:
 
----
+
 
 ## 🛠️ Configuração do Ambiente
 
