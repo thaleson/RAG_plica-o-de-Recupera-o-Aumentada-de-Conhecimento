@@ -186,7 +186,7 @@ Certifique-se de que o contêiner do Ollama está configurado para rodar o model
 
 ## 📹 Vídeo de Teste
 
-Veja o vídeo testando a aplicação: [Vídeo de Teste](https://www.youtube.com/watch?v=Wiu-epVUAQo&t=53s)
+Veja o vídeo testando a aplicação: [Vídeo de Teste](https://www.youtube.com/watch?v=Wiu-epVUAQo)
 
 ## 📜 Licença
 
