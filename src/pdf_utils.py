@@ -1,6 +1,7 @@
 from PyPDF2 import PdfReader
 from langchain_community.document_loaders import PDFPlumberLoader
 
+
 def extrair_texto_pdf(pdf_file):
     """
     Extrai todo o texto de um arquivo PDF e retorna como uma única string.
@@ -24,6 +25,7 @@ def extrair_texto_pdf(pdf_file):
     for page in reader.pages:
         texto += page.extract_text()
     return texto
+
 
 def extract_text_to_documents(file_path):
     """

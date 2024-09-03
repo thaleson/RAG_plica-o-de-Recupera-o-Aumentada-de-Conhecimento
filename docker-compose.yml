@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./db:/app/db
+    environment:
+      - STREAMLIT_SERVER_ENABLE_CORS=false
+      - STREAMLIT_SERVER_HEADLESS=true
+    depends_on:
+      - chromadb
+
+  chromadb:
+    image: nouchka/sqlite3
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./db:/data
+    environment:
+      - SQLITE_DATABASE=/data/chroma.sqlite3
+
+  ollama:
+
+    build:
+      context: ./ollama  # Diretório onde está o Dockerfile do Ollama
+      dockerfile: Dockerfile
+
+  
+    ports:
+      - "11434:11434"
+    volumes:
+      - ./models:/models
+    environment:
+      - MODEL_NAME=llama3
+  

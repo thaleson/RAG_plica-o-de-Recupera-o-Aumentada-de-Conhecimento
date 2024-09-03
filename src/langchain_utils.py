@@ -1,5 +1,6 @@
 from langchain import LangChain
 
+
 class LangChainWrapper:
     """
     Um wrapper para a classe LangChain que facilita a interação com o modelo LangChain.
@@ -13,11 +14,11 @@ class LangChainWrapper:
     --------
     __init__(model_name: str)
         Inicializa o LangChainWrapper com o nome do modelo fornecido.
-    
+
     processar(texto: str) -> str
         Processa o texto usando o modelo LangChain e retorna o resultado.
     """
-    
+
     def __init__(self, model_name: str):
         """
         Inicializa o LangChainWrapper com o nome do modelo fornecido.
@@ -37,7 +38,7 @@ class LangChainWrapper:
         -----------
         texto : str
             O texto a ser processado pelo modelo LangChain.
-        
+
         Retorna:
         --------
         str

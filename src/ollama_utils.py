@@ -1,5 +1,6 @@
 import ollama
 
+
 class Ollama3Wrapper:
     """
     Um wrapper para a interação com o modelo Ollama 3, facilitando o processamento de textos e a extração de vetores.
@@ -15,7 +16,7 @@ class Ollama3Wrapper:
     --------
     __init__(model_name: str)
         Inicializa o Ollama3Wrapper com o nome do modelo e cria uma instância do cliente Ollama.
-    
+
     processar(texto: str) -> dict
         Processa um texto usando o modelo Ollama 3 e retorna uma estrutura contendo os vetores extraídos.
     """
@@ -40,13 +41,13 @@ class Ollama3Wrapper:
         -----------
         texto : str
             Texto a ser processado pelo modelo Ollama 3.
-        
+
         Retorna:
         --------
         dict
             Dicionário contendo os vetores extraídos, sob a chave 'vetores'. Se a resposta não contiver 'embeddings',
             será retornado o texto como uma lista, ajustado conforme necessário.
-        
+
         Lança:
         ------
         ValueError
@@ -56,20 +57,27 @@ class Ollama3Wrapper:
             model=self.model_name,
             prompt=texto,
         )
-        
+
         # Ajuste a forma como você extrai os embeddings dependendo da estrutura real da resposta
-        if 'embeddings' in response:
-            vetores = response['embeddings']
+        if "embeddings" in response:
+            vetores = response["embeddings"]
         else:
             # Se a resposta não contém 'embeddings', faça a extração apropriada
-            vetores = response.get('text', [])  # Ajuste conforme necessário
-        
+            vetores = response.get("text", [])  # Ajuste conforme necessário
+
         # Verificar a estrutura de vetores
         if isinstance(vetores, str):
             try:
                 import ast
-                vetores = ast.literal_eval(vetores)  # Converte a string para uma lista, se necessário
+
+                vetores = ast.literal_eval(
+                    vetores
+                )  # Converte a string para uma lista, se necessário
             except (ValueError, SyntaxError) as e:
-                raise ValueError("Não foi possível converter a string para uma lista de vetores. Erro: {}".format(e))
-        
-        return {'vetores': vetores}
+                raise ValueError(
+                    "Não foi possível converter a string para uma lista de vetores. Erro: {}".format(
+                        e
+                    )
+                )
+
+        return {"vetores": vetores}

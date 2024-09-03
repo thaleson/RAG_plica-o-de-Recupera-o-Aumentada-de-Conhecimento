@@ -1,3 +1,7 @@
+Aqui está o README atualizado com as instruções detalhadas sobre Docker e Ollama, bem como o link para o vídeo de teste:
+
+---
+
 # 📚 Aplicação de Recuperação Aumentada de Conhecimento (RAG) com Ollama 3
 
 Bem-vindo ao projeto de Recuperação Aumentada de Conhecimento (RAG) usando o modelo Ollama 3! 🎉 Este projeto oferece uma solução robusta para extrair e consultar informações de arquivos PDF. Vamos começar! 🚀
@@ -44,39 +48,99 @@ cd seu_repositorio
 
 ### 3. Instale as Dependências
 
-execute:
+Execute:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 🏃‍♂️ Uso
+## 🐳 Uso com Docker
 
-### 1. Prepare Seu PDF
+Se preferir usar Docker para rodar a aplicação, siga os passos abaixo:
 
-Coloque o arquivo PDF na mesma pasta que o script principal ou forneça o caminho para ele. 📂
+### 1. Crie o Dockerfile
 
-### 2. Execute a Aplicação
+Certifique-se de que o `Dockerfile` no diretório raiz do projeto está configurado corretamente. Exemplo de `Dockerfile`:
 
-- **No Windows:**
+```dockerfile
+# Use a imagem base oficial do Python
+FROM python:3.10-slim
 
-  ```bash
-  streamlit run main.py
-  ```
+# Define o diretório de trabalho dentro do container
+WORKDIR /app
 
-- **No Linux/macOS:**
+# Copia o arquivo de dependências
+COPY requirements.txt .
 
-  ```bash
-  streamlit run main.py
-  ```
+# Instala as dependências do projeto
+RUN pip install --no-cache-dir -r requirements.txt
 
-Isso iniciará a aplicação Streamlit em seu navegador padrão. 🌐
+# Copia todo o conteúdo do projeto para o diretório de trabalho no container
+COPY . .
 
-### 3. Interaja com a Aplicação
+# Exposição da porta usada pelo Streamlit
+EXPOSE 8501
 
-- **Upload do PDF:** Arraste e solte seu arquivo PDF na área designada para fazer o upload. 📤
-- **Consulta:** Após o upload, digite sua consulta na caixa de texto e clique no botão de enviar. A aplicação retornará uma resposta baseada no conteúdo do PDF. 🧐
+# Comando para iniciar a aplicação Streamlit
+CMD ["streamlit", "run", "main.py"]
+```
 
+### 2. Crie o arquivo `docker-compose.yml`
+
+Configure o arquivo `docker-compose.yml` para incluir o Ollama e o ChromaDB. Exemplo:
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./db:/app/db
+    environment:
+      - STREAMLIT_SERVER_ENABLE_CORS=false
+      - STREAMLIT_SERVER_HEADLESS=true
+    depends_on:
+      - chromadb
+      - ollama
+
+  chromadb:
+    image: nouchka/sqlite3
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./db:/data
+    environment:
+      - SQLITE_DATABASE=/data/chroma.sqlite3
+
+  ollama:
+    image: your-ollama-image
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_MODEL=llama3
+    volumes:
+      - ./models:/models
+```
+
+### 3. Inicie os Contêineres
+
+Execute:
+
+```bash
+docker-compose up
+```
+
+Certifique-se de que o contêiner do Ollama está configurado para rodar o modelo `llama3` e está acessível na porta 11434.
+
+## 📹 Vídeo de Teste
+
+Veja o vídeo testando a aplicação: [Vídeo de Teste](https://www.youtube.com/watch?v=Wiu-epVUAQo&t=53s)
 
 ## 📜 Licença
 

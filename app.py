@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import shutil
+
 from tempfile import NamedTemporaryFile
 from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
@@ -10,6 +11,7 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_community.llms import Ollama
 from langchain.prompts import ChatPromptTemplate
+
 from src.pdf_utils import extrair_texto_pdf, extract_text_to_documents
 from src.ollama_utils import Ollama3Wrapper
 from src.chromadb_utils import ChromaDBWrapper
@@ -28,14 +30,19 @@ embedding = FastEmbedEmbeddings()
 folder_path = "db"
 
 # Definindo o novo template de prompt com contexto concatenado
-new_prompt = ChatPromptTemplate.from_messages([
-    ("system", "Você é uma IA que responde a todas as perguntas sobre um documento PDF enviado por usuários. Você só responde em português."),
-    ("user", "{input}\n\nContexto:\n{context}")
-])
+new_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "Você é uma IA que responde a todas as perguntas sobre um documento PDF enviado por usuários. Você só responde em português.",
+        ),
+        ("user", "{input}\n\nContexto:\n{context}"),
+    ]
+)
 
 # Configurações
-model_name = os.getenv('LANGCHAIN_MODEL', 'ollama3')
-chromadb_url = os.getenv('CHROMADB_URL', 'chroma_db_url')
+model_name = os.getenv("LANGCHAIN_MODEL", "ollama3")
+chromadb_url = os.getenv("CHROMADB_URL", "chroma_db_url")
 
 # Inicializar Ollama3 e ChromaDB
 ollama = Ollama3Wrapper(model_name)
@@ -56,7 +63,7 @@ if uploaded_file is not None:
     # Extrair texto do PDF
     texto = extrair_texto_pdf(temp_file_path)
     documents = extract_text_to_documents(temp_file_path)
-    
+
     st.write("Texto extraído do PDF:")
     st.write(texto)
 
@@ -72,12 +79,12 @@ if uploaded_file is not None:
             documents=chunks, embedding=embedding, persist_directory=folder_path
         )
         vector_store.persist()
-        
+
         st.write("Texto processado e vetores armazenados com sucesso!")
 
     # Consulta ao banco de dados
     consulta = st.text_input("Digite sua consulta")
-    
+
     if st.button("Consultar"):
         """
         Consulta o banco de dados usando a ChromaDB e retorna uma resposta gerada pelo modelo Ollama3.
@@ -86,21 +93,23 @@ if uploaded_file is not None:
         """
         # Recuperar os vetores relevantes para a consulta
         consulta_resultado = db.consulta(consulta)
-        
+
         # Verifique se a consulta retornou documentos relevantes
         if not consulta_resultado:
             st.error("Nenhum documento relevante encontrado.")
-        
-        vector_store = Chroma(persist_directory=folder_path, embedding_function=embedding)
+
+        vector_store = Chroma(
+            persist_directory=folder_path, embedding_function=embedding
+        )
 
         retriever = vector_store.as_retriever(
             search_type="similarity_score_threshold",
             search_kwargs={
                 "k": 20,
-                "score_threshold": 0.8,
+                "score_threshold": 0.9,
             },
         )
-        
+
         document_chain = create_stuff_documents_chain(cached_llm, new_prompt)
         chain = create_retrieval_chain(retriever, document_chain)
 
@@ -110,17 +119,25 @@ if uploaded_file is not None:
             sources = []
             for doc in result.get("context", []):
                 sources.append(
-                    {"source": doc.metadata.get("source", "Desconhecido"), "page_content": doc.page_content}
+                    {
+                        "source": doc.metadata.get("source", "Desconhecido"),
+                        "page_content": doc.page_content,
+                    }
                 )
 
-            response_answer = {"answer": result.get("answer", "Nenhuma resposta encontrada."), "sources": sources}
-            st.write(f"""
+            response_answer = {
+                "answer": result.get("answer", "Nenhuma resposta encontrada."),
+                "sources": sources,
+            }
+            st.write(
+                f"""
             
             ## Resposta
 
             {response_answer["answer"]}
 
-            """)
+            """
+            )
         except Exception as e:
             st.error(f"Erro ao processar a consulta: {e}")
 

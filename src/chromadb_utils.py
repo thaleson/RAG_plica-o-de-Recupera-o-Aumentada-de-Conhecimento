@@ -1,5 +1,6 @@
 from chromadb import Client
 
+
 class ChromaDBWrapper:
     """
     Um wrapper para a interação com o ChromaDB, facilitando o gerenciamento de coleções e armazenamento de vetores.
@@ -19,10 +20,10 @@ class ChromaDBWrapper:
     --------
     __init__(db_url: str)
         Inicializa o ChromaDBWrapper com a URL do banco de dados e configura a coleção.
-    
+
     armazena(vetores: list)
         Armazena uma lista de vetores na coleção do ChromaDB.
-    
+
     consulta(consulta: str) -> dict
         Consulta a coleção do ChromaDB com um texto de consulta e retorna os resultados.
     """
@@ -38,10 +39,10 @@ class ChromaDBWrapper:
         """
         self.client = Client()  # Inicialize o cliente conforme a documentação
         self.db_url = db_url
-        
+
         # Nome da coleção
-        self.collection_name = 'data-doc'
-        
+        self.collection_name = "data-doc"
+
         # Verificar se a coleção já existe
         collections = self.client.list_collections()
         print("Exibindo coleções:")
@@ -53,14 +54,18 @@ class ChromaDBWrapper:
         else:
             try:
                 # Tente criar a coleção
-                self.collection = self.client.create_collection(name=self.collection_name)
+                self.collection = self.client.create_collection(
+                    name=self.collection_name
+                )
                 print(f"Coleção '{self.collection_name}' criada com sucesso.")
             except Exception as e:
                 # Captura qualquer exceção genérica e trata como erro na criação
                 print(f"Erro ao criar a coleção: {e}")
                 # Recupera a coleção existente se a criação falhar
                 self.collection = self.client.get_collection(self.collection_name)
-                print(f"Coleção '{self.collection_name}' já existia. Recuperada com sucesso.")
+                print(
+                    f"Coleção '{self.collection_name}' já existia. Recuperada com sucesso."
+                )
 
     def armazena(self, vetores):
         """
@@ -70,7 +75,7 @@ class ChromaDBWrapper:
         -----------
         vetores : list
             Lista de vetores a serem armazenados. Cada vetor deve ser uma lista.
-        
+
         Lança:
         ------
         ValueError
@@ -80,16 +85,25 @@ class ChromaDBWrapper:
             # Se vetores for uma string, tente converter a string para uma lista de vetores
             try:
                 import ast
+
                 vetores = ast.literal_eval(vetores)  # Converte a string para uma lista
             except (ValueError, SyntaxError) as e:
-                raise ValueError("Não foi possível converter a string para uma lista de vetores. Erro: {}".format(e))
-        
+                raise ValueError(
+                    "Não foi possível converter a string para uma lista de vetores. Erro: {}".format(
+                        e
+                    )
+                )
+
         if not isinstance(vetores, list):
-            raise ValueError("Esperava uma lista de vetores, mas recebeu: {}".format(type(vetores)))
-        
+            raise ValueError(
+                "Esperava uma lista de vetores, mas recebeu: {}".format(type(vetores))
+            )
+
         for vetor in vetores:
             if not isinstance(vetor, list):
-                raise ValueError("Esperava um vetor como lista, mas recebeu: {}".format(type(vetor)))
+                raise ValueError(
+                    "Esperava um vetor como lista, mas recebeu: {}".format(type(vetor))
+                )
             self.collection.add(vetor)  # Adiciona vetores à coleção
 
     def consulta(self, consulta: str) -> dict:
@@ -100,7 +114,7 @@ class ChromaDBWrapper:
         -----------
         consulta : str
             Texto de consulta para buscar na coleção do ChromaDB.
-        
+
         Retorna:
         --------
         dict
@@ -108,5 +122,7 @@ class ChromaDBWrapper:
         """
         # Implementar a lógica para consultar o ChromaDB
         print(self.collection.count())
-        resultados = self.collection.query(query_texts=[consulta])  # Ajuste conforme a API real
+        resultados = self.collection.query(
+            query_texts=[consulta]
+        )  # Ajuste conforme a API real
         return resultados
