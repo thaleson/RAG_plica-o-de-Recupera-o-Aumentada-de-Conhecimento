@@ -101,15 +101,6 @@ Isso permitirá que você rode a aplicação localmente mesmo que o Docker não 
 
 ---
 
-Essa atualização garante que o usuário saiba como proceder em caso de problemas com o Docker e fornece todos os comandos necessários para configurar o ambiente manualmente.
-   
-
-Para executar a aplicação, use o comando:
-
-```bash
-streamlit run app.py
-```
-
 
 ## 🐳 Uso com Docker
 
