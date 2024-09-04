@@ -1,36 +1,39 @@
 import streamlit as st
 import os
-import shutil
-
 from tempfile import NamedTemporaryFile
 from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
-from langchain_community.llms import Ollama
 from langchain.prompts import ChatPromptTemplate
-
+from src.ollama_utils import Llama3APIWrapper
 from src.pdf_utils import extrair_texto_pdf, extract_text_to_documents
-from src.ollama_utils import Ollama3Wrapper
 from src.chromadb_utils import ChromaDBWrapper
+import requests
+import json
 
 # Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
 
-# Inicializar o modelo e o armazenamento de vetores
-cached_llm = Ollama(model="llama3")
+# Inicializar o modelo e o armazenamento de vetores com a chave da API
+llama3_api_key = os.getenv("LLAMA3_API_KEY")
+llama3_base_url = "https://integrate.api.nvidia.com/v1"
 
+
+# Inicializar o modelo Llama3
+llama3_model = Llama3APIWrapper(base_url=llama3_base_url, api_key=llama3_api_key)
+
+# Inicializar outros componentes
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1024, chunk_overlap=80, length_function=len, is_separator_regex=False
 )
-
 embedding = FastEmbedEmbeddings()
 folder_path = "db"
 
 # Definindo o novo template de prompt com contexto concatenado
-new_prompt = ChatPromptTemplate.from_messages(
+new_prompt_template = ChatPromptTemplate.from_messages(
     [
         (
             "system",
@@ -40,12 +43,12 @@ new_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-# Configurações
-model_name = os.getenv("LANGCHAIN_MODEL", "ollama3")
-chromadb_url = os.getenv("CHROMADB_URL", "chroma_db_url")
+# Função para gerar o prompt completo a partir do template
+def generate_prompt(input_text, context):
+    return new_prompt_template.format(input=input_text, context=context)
 
-# Inicializar Ollama3 e ChromaDB
-ollama = Ollama3Wrapper(model_name)
+# Configurações
+chromadb_url = os.getenv("CHROMADB_URL", "chroma_db_url")
 db = ChromaDBWrapper(chromadb_url)
 
 # Configuração da interface Streamlit
@@ -69,75 +72,38 @@ if uploaded_file is not None:
 
     # Processar o texto do PDF
     if st.button("Processar Texto"):
-        """
-        Processa o texto extraído do PDF e armazena os vetores gerados no banco de dados.
-
-        O texto extraído é dividido em chunks usando `RecursiveCharacterTextSplitter`, e cada chunk é convertido em vetores usando `FastEmbedEmbeddings`. Os vetores são armazenados no banco de dados usando `Chroma` e persistidos no diretório especificado por `folder_path`.
-        """
         chunks = text_splitter.split_documents(documents)
         vector_store = Chroma.from_documents(
             documents=chunks, embedding=embedding, persist_directory=folder_path
         )
         vector_store.persist()
-
         st.write("Texto processado e vetores armazenados com sucesso!")
 
     # Consulta ao banco de dados
     consulta = st.text_input("Digite sua consulta")
 
-    if st.button("Consultar"):
-        """
-        Consulta o banco de dados usando a ChromaDB e retorna uma resposta gerada pelo modelo Ollama3.
-
-        A consulta é feita no banco de dados para recuperar documentos relevantes. Os documentos recuperados são utilizados para gerar uma resposta usando o modelo Ollama3. O resultado inclui a resposta gerada e fontes relevantes, que são exibidas ao usuário.
-        """
-        # Recuperar os vetores relevantes para a consulta
-        consulta_resultado = db.consulta(consulta)
-
-        # Verifique se a consulta retornou documentos relevantes
-        if not consulta_resultado:
-            st.error("Nenhum documento relevante encontrado.")
-
+    if st.button("Consultar") and consulta:
         vector_store = Chroma(
             persist_directory=folder_path, embedding_function=embedding
         )
-
         retriever = vector_store.as_retriever(
             search_type="similarity_score_threshold",
-            search_kwargs={
-                "k": 20,
-                "score_threshold": 0.9,
-            },
+            search_kwargs={"k": 20, "score_threshold": 0.4},
         )
 
-        document_chain = create_stuff_documents_chain(cached_llm, new_prompt)
-        chain = create_retrieval_chain(retriever, document_chain)
+        # Obter contexto dos documentos mais relevantes
+        context = ""
+        results = retriever.get_relevant_documents(consulta)
+        if results:
+            context = " ".join(doc.page_content for doc in results)
 
-        # Realizar a consulta e obter o resultado
+        # Gere o prompt completo com o contexto extraído
+        prompt = generate_prompt(consulta, context)
+        
+        # Use o wrapper como um "Runnable" aqui
         try:
-            result = chain.invoke({"input": consulta, "context": consulta_resultado})
-            sources = []
-            for doc in result.get("context", []):
-                sources.append(
-                    {
-                        "source": doc.metadata.get("source", "Desconhecido"),
-                        "page_content": doc.page_content,
-                    }
-                )
-
-            response_answer = {
-                "answer": result.get("answer", "Nenhuma resposta encontrada."),
-                "sources": sources,
-            }
-            st.write(
-                f"""
-            
-            ## Resposta
-
-            {response_answer["answer"]}
-
-            """
-            )
+            result = llama3_model(prompt)
+            st.write(f"## Resposta\n\n{result}")
         except Exception as e:
             st.error(f"Erro ao processar a consulta: {e}")
 

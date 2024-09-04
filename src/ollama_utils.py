@@ -1,83 +1,72 @@
-import ollama
+import requests
 
-
-class Ollama3Wrapper:
+class Llama3APIWrapper:
     """
-    Um wrapper para a interação com o modelo Ollama 3, facilitando o processamento de textos e a extração de vetores.
+    Um wrapper para a interação com o modelo Llama 3, facilitando o processamento de textos e a geração de respostas.
 
     Atributos:
     ----------
-    model_name : str
-        Nome do modelo Ollama 3 a ser utilizado.
-    client : ollama.Client
-        Instância do cliente Ollama para interagir com o modelo.
+    base_url : str
+        URL base da API do Llama 3.
+    api_key : str
+        Chave da API para autenticação.
 
     Métodos:
     --------
-    __init__(model_name: str)
-        Inicializa o Ollama3Wrapper com o nome do modelo e cria uma instância do cliente Ollama.
+    __init__(base_url: str, api_key: str)
+        Inicializa o Llama3APIWrapper com a URL base e a chave da API.
 
-    processar(texto: str) -> dict
-        Processa um texto usando o modelo Ollama 3 e retorna uma estrutura contendo os vetores extraídos.
+    __call__(prompt: str) -> str
+        Envia um prompt para o modelo Llama 3 e retorna a resposta gerada.
     """
 
-    def __init__(self, model_name: str):
+    def __init__(self, base_url: str, api_key: str):
         """
-        Inicializa o Ollama3Wrapper com o nome do modelo e cria uma instância do cliente Ollama.
+        Inicializa o Llama3APIWrapper com a URL base e a chave da API.
 
         Parâmetros:
         -----------
-        model_name : str
-            Nome do modelo Ollama 3 a ser utilizado.
+        base_url : str
+            URL base da API do Llama 3.
+        api_key : str
+            Chave da API para autenticação.
         """
-        self.model_name = model_name
-        self.client = ollama.Client()  # Ajuste se necessário para criar um cliente
+        self.base_url = base_url
+        self.api_key = api_key
 
-    def processar(self, texto: str) -> dict:
+    def __call__(self, prompt: str) -> str:
         """
-        Processa um texto usando o modelo Ollama 3 e retorna uma estrutura contendo os vetores extraídos.
+        Envia um prompt para o modelo Llama 3 e retorna a resposta gerada.
 
         Parâmetros:
         -----------
-        texto : str
-            Texto a ser processado pelo modelo Ollama 3.
+        prompt : str
+            Texto a ser enviado para o modelo Llama 3.
 
         Retorna:
         --------
-        dict
-            Dicionário contendo os vetores extraídos, sob a chave 'vetores'. Se a resposta não contiver 'embeddings',
-            será retornado o texto como uma lista, ajustado conforme necessário.
-
-        Lança:
-        ------
-        ValueError
-            Se não for possível converter a string para uma lista de vetores.
+        str
+            Resposta gerada pelo modelo Llama 3.
         """
-        response = self.client.generate(
-            model=self.model_name,
-            prompt=texto,
-        )
-
-        # Ajuste a forma como você extrai os embeddings dependendo da estrutura real da resposta
-        if "embeddings" in response:
-            vetores = response["embeddings"]
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": "meta/llama3-70b-instruct",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.6,
+            "top_p": 1,
+            "max_tokens": 1024,
+            "stream": False,  # Alterado para False para facilitar a depuração
+        }
+        response = requests.post(f"{self.base_url}/chat/completions", json=payload, headers=headers)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if "choices" in result:
+                return result["choices"][0]["message"]["content"]
+            else:
+                return "Resposta não encontrada."
         else:
-            # Se a resposta não contém 'embeddings', faça a extração apropriada
-            vetores = response.get("text", [])  # Ajuste conforme necessário
-
-        # Verificar a estrutura de vetores
-        if isinstance(vetores, str):
-            try:
-                import ast
-
-                vetores = ast.literal_eval(
-                    vetores
-                )  # Converte a string para uma lista, se necessário
-            except (ValueError, SyntaxError) as e:
-                raise ValueError(
-                    "Não foi possível converter a string para uma lista de vetores. Erro: {}".format(
-                        e
-                    )
-                )
-
-        return {"vetores": vetores}
+            return f"Erro ao acessar a API: {response.status_code}, {response.text}"
