@@ -1,7 +1,3 @@
-Aqui está o README atualizado com as instruções detalhadas sobre Docker e Ollama, bem como o link para o vídeo de teste:
-
----
-
 # 📚 Aplicação de Recuperação Aumentada de Conhecimento (RAG) com Ollama 3
 
 Bem-vindo ao projeto de Recuperação Aumentada de Conhecimento (RAG) usando o modelo Ollama 3! 🎉 Este projeto oferece uma solução robusta para extrair e consultar informações de arquivos PDF. Vamos começar! 🚀
@@ -53,6 +49,54 @@ Execute:
 ```bash
 pip install -r requirements.txt
 ```
+
+---
+
+## 🛠️ Configuração do Ambiente
+
+⚠️ **Aviso Importante:** Caso você encontre problemas para rodar a aplicação usando Docker, você pode configurar o servidor Ollama manualmente e executar o aplicativo diretamente com o Streamlit. Siga os passos abaixo para garantir que tudo esteja configurado corretamente.
+
+### **Passos para Configuração Manual:**
+
+1. **Instalar o Servidor Ollama:**
+
+   - Baixe e instale o servidor Ollama [aqui](https://ollama.com/download). Certifique-se de escolher a versão apropriada para o seu sistema operacional.
+   - Após a instalação, inicie o servidor Ollama no seu sistema.
+
+2. **Baixar o Modelo Llama 3:**
+
+   - Verifique se o `ollama` está instalado corretamente:
+
+   ```bash
+   ollama --version
+   ```
+
+   - Se o comando acima retornar a versão do `ollama`, prossiga para baixar o modelo Llama 3:
+
+   ```bash
+   ollama pull llama3
+   ```
+
+   - Verifique se o modelo foi baixado com sucesso:
+
+   ```bash
+   ollama models
+   ```
+
+   - O modelo `llama3` deve estar listado entre os modelos disponíveis.
+
+3. **Executar a Aplicação:**
+
+   - Após configurar o servidor Ollama e baixar o modelo Llama 3, execute o aplicativo Streamlit com o comando:
+
+   ```bash
+   streamlit run app.py
+   ```
+
+Isso permitirá que você rode a aplicação localmente mesmo que o Docker não funcione conforme esperado.
+
+---
+
 
 ## 🐳 Uso com Docker
 
@@ -140,7 +184,7 @@ Certifique-se de que o contêiner do Ollama está configurado para rodar o model
 
 ## 📹 Vídeo de Teste
 
-Veja o vídeo testando a aplicação: [Vídeo de Teste](https://www.youtube.com/watch?v=Wiu-epVUAQo&t=53s)
+Veja o vídeo testando a aplicação: [Vídeo de Teste](https://www.youtube.com/watch?v=Wiu-epVUAQo)
 
 ## 📜 Licença
 
