@@ -50,10 +50,6 @@ Execute:
 pip install -r requirements.txt
 ```
 
-
-
-Aqui está a seção atualizada do README com as instruções e um aviso ao usuário sobre o que fazer caso o Docker não funcione corretamente:
-
 ---
 
 ## 🛠️ Configuração do Ambiente
