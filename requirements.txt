@@ -15,8 +15,8 @@ cachetools==5.5.0
 certifi==2024.8.30
 cffi==1.17.0
 charset-normalizer==3.3.2
-chroma-hnswlib==0.7.2
-chromadb==0.4.4
+chroma-hnswlib==0.7.6
+chromadb==0.5.5
 ci-info==0.3.0
 click==8.1.7
 click-default-group==1.2.4
@@ -116,8 +116,7 @@ pyarrow==17.0.0
 pyasn1==0.6.0
 pyasn1_modules==0.4.0
 pycparser==2.22
-pydantic==1.10.9
-
+pydantic==2.8.2
 pydantic_core==2.20.1
 pydeck==0.9.1
 pydot==3.0.1
