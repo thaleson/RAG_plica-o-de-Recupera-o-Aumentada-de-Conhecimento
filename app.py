@@ -6,7 +6,6 @@ from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains import create_retrieval_chain
 from langchain.prompts import ChatPromptTemplate
 from src.ollama_utils import Llama3APIWrapper
 from src.pdf_utils import extrair_texto_pdf, extract_text_to_documents
@@ -90,7 +89,7 @@ if uploaded_file is not None:
             search_type="similarity_score_threshold",
             search_kwargs={
                 "k": 20,
-                "score_threshold": 0.9,
+                "score_threshold": 0.6,
             },
         )
 
