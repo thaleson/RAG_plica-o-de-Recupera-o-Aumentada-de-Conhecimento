@@ -1,6 +1,5 @@
 from chromadb import Client
 
-
 class ChromaDBWrapper:
     """
     Um wrapper para a interação com o ChromaDB, facilitando o gerenciamento de coleções e armazenamento de vetores.
@@ -43,29 +42,26 @@ class ChromaDBWrapper:
         # Nome da coleção
         self.collection_name = "data-doc"
 
-        # Verificar se a coleção já existe
-        collections = self.client.list_collections()
-        print("Exibindo coleções:")
-        print(collections)
+        # Conectar ao ChromaDB
+        self.client.set_url(self.db_url)
 
-        if self.collection_name in collections:
-            self.collection = self.client.get_collection(self.collection_name)
-            print(f"Coleção '{self.collection_name}' recuperada com sucesso.")
-        else:
-            try:
-                # Tente criar a coleção
+        # Verificar se a coleção já existe
+        try:
+            collections = self.client.list_collections()
+            print("Exibindo coleções:")
+            print(collections)
+
+            if self.collection_name in collections:
+                self.collection = self.client.get_collection(self.collection_name)
+                print(f"Coleção '{self.collection_name}' recuperada com sucesso.")
+            else:
                 self.collection = self.client.create_collection(
                     name=self.collection_name
                 )
                 print(f"Coleção '{self.collection_name}' criada com sucesso.")
-            except Exception as e:
-                # Captura qualquer exceção genérica e trata como erro na criação
-                print(f"Erro ao criar a coleção: {e}")
-                # Recupera a coleção existente se a criação falhar
-                self.collection = self.client.get_collection(self.collection_name)
-                print(
-                    f"Coleção '{self.collection_name}' já existia. Recuperada com sucesso."
-                )
+        except Exception as e:
+            print(f"Erro ao acessar ou criar a coleção: {e}")
+            raise
 
     def armazena(self, vetores):
         """
@@ -82,16 +78,12 @@ class ChromaDBWrapper:
             Se `vetores` não for uma lista ou se algum vetor dentro da lista não for uma lista.
         """
         if isinstance(vetores, str):
-            # Se vetores for uma string, tente converter a string para uma lista de vetores
             try:
                 import ast
-
-                vetores = ast.literal_eval(vetores)  # Converte a string para uma lista
+                vetores = ast.literal_eval(vetores)
             except (ValueError, SyntaxError) as e:
                 raise ValueError(
-                    "Não foi possível converter a string para uma lista de vetores. Erro: {}".format(
-                        e
-                    )
+                    "Não foi possível converter a string para uma lista de vetores. Erro: {}".format(e)
                 )
 
         if not isinstance(vetores, list):
@@ -120,9 +112,12 @@ class ChromaDBWrapper:
         dict
             Resultados da consulta, formatados conforme a API real do ChromaDB.
         """
-        # Implementar a lógica para consultar o ChromaDB
-        print(self.collection.count())
-        resultados = self.collection.query(
-            query_texts=[consulta]
-        )  # Ajuste conforme a API real
-        return resultados
+        try:
+            print(self.collection.count())
+            resultados = self.collection.query(
+                query_texts=[consulta]
+            )  # Ajuste conforme a API real
+            return resultados
+        except Exception as e:
+            print(f"Erro ao consultar a coleção: {e}")
+            raise
