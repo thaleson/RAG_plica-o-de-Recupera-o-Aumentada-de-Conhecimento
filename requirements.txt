@@ -51,7 +51,8 @@ httpx==0.27.2
 huggingface-hub==0.24.6
 humanfriendly==10.0
 idna==3.8
-importlib_metadata==8.4.0
+importlib_metadata<7
+
 importlib_resources==6.4.4
 isodate==0.6.1
 Jinja2==3.1.4
@@ -136,6 +137,7 @@ python-ulid==2.7.0
 pytz==2024.1
 pyxnat==1.6.2
 PyYAML==6.0.2
+pysqlite3-binary>=0.4.6
 rdflib==6.3.2
 referencing==0.35.1
 regex==2024.7.24
