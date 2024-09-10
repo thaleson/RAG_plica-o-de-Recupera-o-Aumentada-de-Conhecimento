@@ -137,7 +137,7 @@ python-ulid==2.7.0
 pytz==2024.1
 pyxnat==1.6.2
 PyYAML==6.0.2
-pysqlite3-binary>=0.4.6
+
 rdflib==6.3.2
 referencing==0.35.1
 regex==2024.7.24
