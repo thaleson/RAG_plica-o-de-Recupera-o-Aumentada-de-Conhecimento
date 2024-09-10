@@ -1,8 +1,4 @@
 from chromadb import Client
-<<<<<<< HEAD
-
-=======
->>>>>>> dece77cfb8809a2dd20faaa06e016c19b1238a37
 
 class ChromaDBWrapper:
     """
@@ -128,7 +124,7 @@ class ChromaDBWrapper:
         resultados = self.collection.query(
             query_texts=[consulta]
         )  # Ajuste conforme a API real
-=======
+
         if self.collection_name in collections:
             self.collection = self.client.get_collection(self.collection_name)
         else:
@@ -144,5 +140,5 @@ class ChromaDBWrapper:
 
     def consulta(self, consulta: str) -> dict:
         resultados = self.collection.query(query_texts=[consulta])
->>>>>>> dece77cfb8809a2dd20faaa06e016c19b1238a37
+
         return resultados
