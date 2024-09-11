@@ -32,10 +32,15 @@ class ChromaDBWrapper:
         """
         Inicializa o ChromaDBWrapper com a URL do banco de dados e configura a coleção.
         """
-        # Inicialize o cliente do ChromaDB
+<<<<<<< HEAD
         self.client = Client()  # Inicialize o cliente conforme a documentação
         
         self.db_url = db_url
+
+        # Nome da coleção
+=======
+        self.client = Client(url=db_url)  # Certifique-se de passar a URL corretamente
+>>>>>>> dece77cfb8809a2dd20faaa06e016c19b1238a37
         self.collection_name = "data-doc"
 
         # Configurar a URL do cliente se necessário, de acordo com a documentação da biblioteca
