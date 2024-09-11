@@ -1,3 +1,4 @@
+import collections
 from chromadb import Client
 
 class ChromaDBWrapper:
@@ -31,19 +32,19 @@ class ChromaDBWrapper:
         """
         Inicializa o ChromaDBWrapper com a URL do banco de dados e configura a coleção.
         """
-<<<<<<< HEAD
+        # Inicialize o cliente do ChromaDB
         self.client = Client()  # Inicialize o cliente conforme a documentação
+        
         self.db_url = db_url
-
-        # Nome da coleção
-=======
-        self.client = Client(url=db_url)  # Certifique-se de passar a URL corretamente
->>>>>>> dece77cfb8809a2dd20faaa06e016c19b1238a37
         self.collection_name = "data-doc"
+
+        # Configurar a URL do cliente se necessário, de acordo com a documentação da biblioteca
+        # Se o Client não aceitar o argumento 'url', configure o URL de outra maneira, por exemplo:
+        # self.client.set_url(self.db_url)
 
         # Verificar se a coleção já existe
         collections = self.client.list_collections()
-<<<<<<< HEAD
+
         print("Exibindo coleções:")
         print(collections)
 
@@ -124,21 +125,5 @@ class ChromaDBWrapper:
         resultados = self.collection.query(
             query_texts=[consulta]
         )  # Ajuste conforme a API real
-
-        if self.collection_name in collections:
-            self.collection = self.client.get_collection(self.collection_name)
-        else:
-            self.collection = self.client.create_collection(self.collection_name)
-
-    def armazena(self, vetores):
-        if not isinstance(vetores, list):
-            raise ValueError("Esperava uma lista de vetores.")
-        for vetor in vetores:
-            if not isinstance(vetor, list):
-                raise ValueError("Esperava um vetor como lista.")
-            self.collection.add(vetor)  # Adiciona vetores à coleção
-
-    def consulta(self, consulta: str) -> dict:
-        resultados = self.collection.query(query_texts=[consulta])
 
         return resultados

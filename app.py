@@ -6,7 +6,6 @@ from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains import create_retrieval_chain
 from langchain.prompts import ChatPromptTemplate
 from src.ollama_utils import Llama3APIWrapper
 from src.pdf_utils import extrair_texto_pdf, extract_text_to_documents
@@ -18,7 +17,7 @@ import json
 load_dotenv()
 
 # Inicializar o modelo e o armazenamento de vetores com a chave da API
-llama3_api_key = os.getenv("LLAMA3_API_KEY")
+llama3_api_key = os.getenv("API_KEY")
 llama3_base_url = "https://integrate.api.nvidia.com/v1"
 
 
