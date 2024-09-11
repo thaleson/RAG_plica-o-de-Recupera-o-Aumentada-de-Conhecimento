@@ -89,7 +89,7 @@ if uploaded_file is not None:
             search_type="similarity_score_threshold",
             search_kwargs={
                 "k": 20,
-                "score_threshold": 0.6,
+                "score_threshold": 0.5,
             },
         )
 
